@@ -1,5 +1,8 @@
 #include "file.h"
 
+/**
+ * @return filesize (offset + count of writed butes), or -1 if has a error
+*/
 size_t write_buffer_to_file(int32_t fd, size_t offset, const void* buffer, size_t elem_size, size_t count) {
     size_t result_offset = lseek(fd, offset, SEEK_SET); 
     if (result_offset != offset) {

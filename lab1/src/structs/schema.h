@@ -20,6 +20,6 @@ struct schema {
     int count;
     std::string name;
     std::vector<struct attribute_schema> attributes;
-};
+}; 
 
 #endif
