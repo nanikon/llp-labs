@@ -1,27 +1,21 @@
 #ifndef LLP_FILE_H
 #define LLP_FILE_H
 
-#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-struct tree_header {
-    // Смещение первого узла дерева относительно начала файла
-    int64_t first_node;
-    // Смещение первой схемы узла относительно начала файла
-    int64_t first_schema;
-    // Смещение первого свободного блока относительно начала файла
-    int64_t first_free_block;
-    // у Фарида есть ещё size, у Маши - смещение конца файла
-};
+size_t write_buffer_to_file(int32_t fd, size_t offset, const void* buffer, size_t elem_size, size_t count);
 
-// tree_header лежит внутри, кажется что пользователь не должен иметь к нему доступ
-struct file_descriptor {
-    FILE* file;
-    struct tree_header header;
-};
+size_t read_buffer_from_file(int32_t fd, size_t offset, void* buffer, size_t elem_size, size_t count);
 
-struct file_descriptor open_file(const char* filename);
+int32_t open_file(const char* filename);
 
-void close_file(struct file_descriptor fd);
+void close_file(int32_t fd);
 
-#endif 
+size_t get_file_len(const int32_t fd);
+
+#endif
