@@ -1,5 +1,5 @@
 #include "test/unit_test/unit_test.h"
-#include <string.h>
+#include <cstring>
 
 extern unit_test_func unit_tests[UNIT_TEST_COUNT];
 
@@ -7,13 +7,13 @@ const char* argument_description = "u if you want to run unit test, s if you wan
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        fprintf(stderr, "Invalid number of arguments: %d, expect 1: %s\n", argc, argument_description);
+        fprintf(stderr, "Invalid number of arguments: %d, expect 1: %s\n", argc - 1, argument_description);
         return -1;
     }
     if (strcmp(argv[1], "u") == 0) {
         printf("<============ Unit tests started ============>\n");
-        for (uint8_t i = 0; i < UNIT_TEST_COUNT; i++) {
-            unit_tests[i]();
+        for (auto & unit_test : unit_tests) {
+            unit_test();
         };
         printf("<============ Unit tests finihshed ============>\n");
     } else if (strcmp(argv[1], "s") == 0) {

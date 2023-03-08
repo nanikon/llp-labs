@@ -3,7 +3,7 @@
 #define BUFFER_LEN 10
 
 void test_io_module() {
-    int32_t fd = open_file("resources/test");
+    int32_t fd = open_file("test");
     assert(fd);
 
     int64_t buffer[BUFFER_LEN] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
