@@ -46,7 +46,7 @@
 ## Использование
 ### Windows
 Требования:
-* CMAKE 3.25.2+
+* CMake 3.22.1+
 * MinGW for x86_64 12.2.0+ (включая x86_64-w64-mingw32-gcc, x86_64-w64-mingw32-g++, ar, mingw32-make)
 
 Установка системных переменных:
@@ -68,4 +68,20 @@
 
 `build\main.exe s`
 ### Linux
+Требования:
+* CMake 3.22.1+
+* GNU Make 4.3+
+* g++ 11.3.0+
+
+Сборка:
+
+`./build.sh`
+
+Запуск unit-тестов:
+
+`./build/main u`
+
+Запуск нагрузочных тестов:
+
+`./build/main s`
 ## API
