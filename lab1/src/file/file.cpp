@@ -20,6 +20,13 @@ size_t write_buffer_to_file(int32_t fd, size_t offset, const void* buffer, size_
     return offset + write_len;
 }
 
+size_t write_str_with_len_to_file(int32_t fd, size_t offset, const char* str) {
+    size_t str_len = strlen(str);
+    offset = write_buffer_to_file(fd, offset, &str_len, sizeof(size_t), 1);
+    offset = write_buffer_to_file(fd, offset, str, sizeof(char), str_len);
+    return offset;
+}
+
 size_t read_buffer_from_file(int32_t fd, size_t offset, void* buffer, size_t elem_size, size_t count) {
     size_t offset_result = lseek(fd, offset, SEEK_SET); 
     if (offset_result != offset) {

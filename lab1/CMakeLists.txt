@@ -7,7 +7,9 @@ set(RUNTIME_OUTPUT_DIRECTORY build)
 include_directories(src)
 add_executable(main src/main.cpp
         src/file/file.cpp src/file/file.h
-        src/structs/header.h
-        src/structs/schema.h
+        src/structs/header.h src/structs/header.cpp 
+        src/structs/block.h src/structs/block.cpp 
+        src/structs/schema.h src/structs/schema.cpp
+        src/api/api.h
         src/test/unit_test/unit_test.h src/test/unit_test/unit_test.cpp
 )

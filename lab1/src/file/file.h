@@ -5,10 +5,12 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 size_t write_buffer_to_file(int32_t fd, size_t offset, const void* buffer, size_t elem_size, size_t count);
+size_t write_str_with_len_to_file(int32_t fd, size_t offset, const char* str);
 
 size_t read_buffer_from_file(int32_t fd, size_t offset, void* buffer, size_t elem_size, size_t count);
 

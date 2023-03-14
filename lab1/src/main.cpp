@@ -1,4 +1,5 @@
 #include "test/unit_test/unit_test.h"
+#include "api/api.h"
 #include <cstring>
 
 extern unit_test_func unit_tests[UNIT_TEST_COUNT];
@@ -12,8 +13,8 @@ int main(int argc, char** argv) {
     }
     if (strcmp(argv[1], "u") == 0) {
         printf("<============ Unit tests started ============>\n");
-        for (auto & unit_test : unit_tests) {
-            unit_test();
+        for (int i = 0; i < UNIT_TEST_COUNT; i++) {
+            unit_tests[i]();
         };
         printf("<============ Unit tests finihshed ============>\n");
     } else if (strcmp(argv[1], "s") == 0) {

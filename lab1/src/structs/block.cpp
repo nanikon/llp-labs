@@ -56,12 +56,12 @@ void update_block_next(struct file_descriptor* ptr, size_t offset, size_t new_ne
  	write_buffer_to_file(ptr-> fd, offset + BLOCK_NEXT_OFFSET, &new_next_offset, 1, sizeof(size_t));
 }
 
-void delete_block(size_t offset, size_t* tree_head_offset, struct file_descriptor* ptr) {
+void delete_block(size_t offset, struct file_descriptor* ptr) {
     size_t next = read_block_next(ptr, offset);
 	size_t prev = read_block_prev(ptr, offset);
 	
 	if (prev == 0) { 
-	    *tree_head_offset = next;
+		ptr->header->first_free_block = next;
 	    update_block_prev(ptr, next, 0);
 	} else if (next == 0) { 
 	    update_block_next(ptr, prev, 0);
@@ -80,8 +80,8 @@ void create_block(size_t* free_space_offset, size_t block_offset, size_t block_s
 size_t find_free_space(size_t block, size_t size, struct file_descriptor* ptr) {
     size_t next;
 	do {
-	    next = read_block_next(ptr, block);
-	    if (read_block_size(ptr, block) >= size) return block;
+	    next = read_block_next(ptr, block); 
+	    if (read_block_size(ptr, block) >= size) return block; // возможно пробегаться все же по всему массиву и отдавать наименьшее из подходящих (?)
 	    else block = next;
 	} while(next != 0);
 	return 0;
