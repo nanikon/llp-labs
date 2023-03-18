@@ -21,6 +21,24 @@ void test_io_module() {
     printf("test io module finished successful\n");
 };
 
+void test_str_io_module() {
+    int32_t fd = open_file("test");
+    assert(fd);
+
+    const char* first_str = "Hello world!";
+    size_t result = write_null_term_str_to_file(fd, 0, first_str);
+    assert(result != -1);
+
+    const char* result_str = NULL;
+    result = read_null_term_str_from_file(fd, 0, &(result_str));
+    assert(result != -1);
+    assert(strcmp(first_str, result_str)== 0);
+
+    close_file(fd);
+    printf("test str io module finished successful\n");
+}
+
 unit_test_func unit_tests[UNIT_TEST_COUNT] = {
-    test_io_module
+    test_io_module,
+    test_str_io_module
 };

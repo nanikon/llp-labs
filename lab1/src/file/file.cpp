@@ -20,7 +20,10 @@ size_t write_buffer_to_file(int32_t fd, size_t offset, const void* buffer, size_
     return offset + write_len;
 }
 
-size_t write_str_with_len_to_file(int32_t fd, size_t offset, const char* str) {
+/**
+ * Записывает нуль-терминированную строку в виде её длины и потом самой строки в файл
+*/
+size_t write_null_term_str_to_file(int32_t fd, size_t offset, const char* str) {
     size_t str_len = strlen(str);
     offset = write_buffer_to_file(fd, offset, &str_len, sizeof(size_t), 1);
     offset = write_buffer_to_file(fd, offset, str, sizeof(char), str_len);
@@ -42,6 +45,20 @@ size_t read_buffer_from_file(int32_t fd, size_t offset, void* buffer, size_t ele
     }
 
     return offset + read_len;
+}
+
+/**
+ * Читает строку из файла, записанную как её длина + она сама из файла (сделано, чтобы не читать посимвольно до нуль-терминатора). 
+ * В buffer возвращается ссылка на ссылку на строку
+*/
+size_t read_null_term_str_from_file(int32_t fd, size_t offset, const char** buffer) {
+    size_t len = 0;
+    offset = read_buffer_from_file(fd, offset, &(len), sizeof(size_t), 1);
+    char* str = (char*) malloc(sizeof(char) * (len + 1));
+    offset = read_buffer_from_file(fd, offset, str, sizeof(char), len);
+    str[len] = 0;
+    *(buffer) = str;
+    return offset;
 }
 
 int32_t open_file(const char* filename) {

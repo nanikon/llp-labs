@@ -6,8 +6,9 @@
 #include <string.h>
 
 #include "../file/file.h"
+#include "block.h"
 
-enum type {
+enum value_type {
     INT,
     DOUBLE,
     BOOL,
@@ -15,11 +16,13 @@ enum type {
 };
 
 struct attribute_schema { 
-    enum type type;
-    char* name;
+    enum value_type type;
+    const char* name;
 };
 
-#define STRUCT_SHEMA_HEADER_SIZE sizeof(size_t) * 5 // + длина name
+#define STRUCT_SHEMA_HEADER_SIZE sizeof(size_t) * 5 // для записи в файл - четыре поля + длина name 
+#define SCHEMA_NEXT_OFFSET sizeof(size_t) * 2
+#define SCHEMA_COUNT_OFFSET sizeof(size_t) * 3
 struct schema {
     size_t offset; // не записывается в файл, вместо него кол-во аттрибутов
     size_t elem_size; // длина блока в файле в котором записана схема - может быть больше фактической длины
@@ -29,12 +32,26 @@ struct schema {
     std::vector<struct attribute_schema*>* attributes;
 }; 
 
+/* Как schema хранится в файле:
+   - кол-во аттрибутов
+   - длина занимаемого ей блока
+   - смещение следующей схемы
+   - число элементов с этой схемой
+   - длина строки с именем схемы
+   - имя схемы
+   далее список аттрибутов (длина была в начале), состоит из:
+    - тип аттрибута
+    - длина имени аттрибута
+    - имя аттрибута
+*/
+
 struct schema* read_first_schema(struct file_descriptor* ptr);
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset);
 size_t read_schema_next(struct file_descriptor* ptr, size_t schema_offset);
 
 void write_schema(struct file_descriptor* ptr, struct schema* schema);
 void update_schema_next(struct file_descriptor* ptr, size_t schema_offset, size_t next);
+void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size_t count);
 
 void free_schema(struct schema* schema);
 // вспомогательные функции, потом убрать из интерфейса

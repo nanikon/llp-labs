@@ -4,7 +4,7 @@
 #include "../../file/file.h"
 #include <assert.h>
 
-#define UNIT_TEST_COUNT 1
+#define UNIT_TEST_COUNT 2
 
 typedef void (*unit_test_func)();
 

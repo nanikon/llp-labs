@@ -25,3 +25,7 @@ void close_file_db(struct file_descriptor* ptr) {
 struct tree_header* read_header(int32_t fd) {
     return NULL;
 }
+
+void write_header(struct file_descriptor* ptr) {
+    
+}
