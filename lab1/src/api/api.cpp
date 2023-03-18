@@ -30,3 +30,12 @@ struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vecto
     write_schema(ptr, schema);
     return schema;
 }
+
+enum schema_operation_status delete_schema(struct file_descriptor* ptr, struct schema* schema) {
+    if (schema->count > 0) {
+        return HAS_DEPENDS;
+    }
+    create_block(schema->offset, schema->elem_size, ptr);
+    free_schema(schema);
+    return OK;
+}

@@ -38,7 +38,25 @@ void test_str_io_module() {
     printf("test str io module finished successful\n");
 }
 
+void test_block_io_module() {
+    int32_t fd = open_file("test");
+    assert(fd);
+    struct file_descriptor ptr = { .fd = fd, .header = NULL };
+
+    struct block source = { .next = 20, .prev = 30, .size = 100 };
+    write_block(&source, &ptr, 5);
+
+    struct block* result = read_block(&ptr, 5);
+
+    assert(memcmp(&source, result, sizeof(struct block)) == 0);
+
+    free_block(result);
+    close_file(fd);
+    printf("test block io module finished successful\n");
+}
+
 unit_test_func unit_tests[UNIT_TEST_COUNT] = {
     test_io_module,
-    test_str_io_module
+    test_str_io_module,
+    test_block_io_module
 };

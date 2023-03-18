@@ -77,6 +77,10 @@ void create_block(size_t* free_space_offset, size_t block_offset, size_t block_s
 	*free_space_offset = block_offset;
 }
 
+void create_block(size_t block_offset, size_t block_size, struct file_descriptor* ptr) {
+	create_block(&(ptr->header->first_free_block), block_offset, block_size, ptr);
+}
+
 size_t find_free_space(size_t block, size_t size, struct file_descriptor* ptr) {
     size_t next;
 	do {
