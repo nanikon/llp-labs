@@ -15,6 +15,7 @@ struct attribute {
     union data value; 
 };
 
+#define PARENT_OFFSET sizeof(size_t) * 2
 #define FIRST_CHILD_OFFSET sizeof(size_t) * 3
 #define PREV_SIBILING_OFFSET sizeof(size_t) * 4
 #define NEXT_SIBILING_OFFSET sizeof(size_t) * 5
@@ -52,11 +53,12 @@ size_t read_node_schema_offset(struct file_descriptor* ptr, size_t node_offset);
 
 // должна быть универсальной и использоваться как при обновлении, так и при создании
 void write_node(struct file_descriptor* ptr, struct node* node);
+void update_parent_on_this_and_next_sibiling(struct file_descriptor* ptr, size_t child_offset, size_t parent_offset);
 void update_first_child(struct file_descriptor* ptr, size_t parent_offset, size_t child_offset);
 void update_prev_sibiling(struct file_descriptor* ptr, size_t node_offset, size_t prev_sibiling_offset);
 void update_next_sibiling(struct file_descriptor* ptr, size_t node_offset, size_t next_sibiling_offset);
 
-bool check_exist_node(struct file_descriptor* ptr, struct node* node);
+bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node);
 
 void free_node(struct node* node);
 

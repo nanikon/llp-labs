@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <string>
-#include <unordered_map>
+#include <tr1/unordered_map>
+#include <map>
 #include <stdlib.h>
 
 #include "../structs/schema.h"
@@ -54,12 +55,14 @@ enum node_create_operation_status {
     WROND_ATTRIBUTE_NODE_CREATE,
     ATTRIBUTE_NOT_FOUND
 };
-/** @param attributes - ключи мапы должны быть из schema, иначе не будут распознаны. Запись аттрибутов будет в том порядке, в котором они указаны в схеме */
+/** @param attributes - ключи мапы должны быть из schema, иначе не будут распознаны. Запись аттрибутов будет в том порядке, в котором они указаны в схеме
+ *  @param parent - родитель вершины, если хотим сделать корневой, то надо передать null
+ */
 enum node_create_operation_status create_node(
     struct file_descriptor* ptr, 
     struct schema* schema, 
     struct node* parent, 
-    std::unordered_map<struct attribute_schema*, union data> attributes,
+    std::tr1::unordered_map<struct attribute_schema*, union data> attributes,
     struct node** node
 );
 
@@ -71,7 +74,7 @@ enum node_update_operation_status {
 /**
  * @param attributes - обновляются только те аттрибуты ноды, которые есть в этой мапе, ключи должны быть из node->schema, иначе не будут распознаны
 */
-enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::unordered_map<struct attribute_schema*, union data> attributes);
+enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::tr1::unordered_map<struct attribute_schema*, union data> attributes);
 
 enum node_delete_operation_status {
     OK_NODE_DELETE = 0,

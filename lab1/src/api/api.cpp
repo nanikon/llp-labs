@@ -5,12 +5,12 @@ struct schema* Schema_Iter::operator*() {
 }
 
 bool Schema_Iter::next() {
-    if (this->schema->next == NULL) {
+    if (this->schema->next == 0) {
         is_valid = false;
         return false;
-    } else {
-        this->schema = read_schema(this->ptr, this->schema->next);
     }
+    this->schema = read_schema(this->ptr, this->schema->next);
+    return true;
 }
 
 void Schema_Iter::free() {
@@ -33,7 +33,7 @@ struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vecto
     schema->attributes = attributes;
     schema->name = name;
     schema->count = 0;
-    schema->next = NULL;
+    schema->next = 0;
     write_schema(ptr, schema);
     return schema;
 }
@@ -62,7 +62,7 @@ enum node_create_operation_status create_node(
     struct file_descriptor* ptr, 
     struct schema* schema, 
     struct node* parent, 
-    std::unordered_map<struct attribute_schema*, union data> attributes,
+    std::tr1::unordered_map<struct attribute_schema*, union data> attributes,
     struct node** node
 ) {
     if (!check_exist_schema(ptr, schema)) {
@@ -70,43 +70,45 @@ enum node_create_operation_status create_node(
     }
     if (parent == NULL) {
         parent = read_node(ptr, ptr->header->first_node);
-    } else if (!check_exist_node(ptr, parent)) {
+    } else if (!check_exist_and_update_node(ptr, &parent)) {
         return PARENT_NOT_FOUND_ON_FILE;
     }
 
     std::vector<struct attribute*>* real_attributes = new std::vector<struct attribute*>;
     for (int i = 0; i < schema->attributes->size(); i++) {
-        if (!attributes.contains(schema->attributes->at(i))) {
+        if (attributes.count(schema->attributes->at(i)) == 0) {
             return ATTRIBUTE_NOT_FOUND;
         }
         real_attributes->push_back(create_attribute(schema->attributes->at(i), attributes[schema->attributes->at(i)]));
     }
-    if (schema->attributes->size() != attributes->size()) return WROND_ATTRIBUTE_NODE_CREATE;
+    if (schema->attributes->size() != attributes.size()) return WROND_ATTRIBUTE_NODE_CREATE;
 
     *node = (struct node*) calloc(1, sizeof(struct node));
     (*node)->schema = schema;
     (*node)->parent = parent->offset;
     (*node)->next_sibiling = parent->first_child;
-    (*node)->attributes = attributes;
+    (*node)->attributes = real_attributes;
     
     schema->count++;
     update_schema_count(ptr, schema->offset, schema->count);
+
     write_node(ptr, *node);
-    update_prev_sibiling(ptr, parent->first_child, node->offset);
+
+    update_prev_sibiling(ptr, parent->first_child, (*node)->offset);
+    update_first_child(ptr, parent->offset, (*node)->offset);
     parent->first_child = (*node)->offset;
-    update_first_child(ptr, parent->offset, node->offset);
     
     return OK_NODE_CREATE;
 }
 
-enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::unordered_map<struct attribute_schema*, union data> attributes) {
-    if (!check_exist_node(ptr, node)) {
+enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::tr1::unordered_map<struct attribute_schema*, union data> attributes) {
+    if (!check_exist_and_update_node(ptr, &node)) {
         return NODE_NOT_FOUND_ON_FILE_NODE_UPDATE;
     }
     size_t changed_attrs = 0;
     std::vector<struct attribute*>* new_attributes = new std::vector<struct attribute*>;
     for (int i = 0; i < node->attributes->size(); i++) {
-        if (attributes.contains(node->attributes->at(i)->schema)) {
+        if (attributes.count(node->attributes->at(i)->schema) != 0) {
             new_attributes->push_back(create_attribute(node->attributes->at(i)->schema, attributes[node->attributes->at(i)->schema]));
             changed_attrs++;
         } else {
@@ -119,8 +121,22 @@ enum node_update_operation_status update_node(struct file_descriptor* ptr, struc
     free(node->attributes);
     node->attributes = new_attributes;
 
-    // create_block() - ? здесь или не здесь
+    size_t prev_offset = node->offset;
     write_node(ptr, node);
+    if (prev_offset != node->offset) {
+        // 4 уведомления об offset-ах
+        if (node->first_child != 0 ) {
+            update_parent_on_this_and_next_sibiling(ptr, node->first_child, node->offset);
+        }   
+        if (node->prev_sibiling != 0) {
+            update_next_sibiling(ptr, node->prev_sibiling, node->offset);
+        } else {
+            update_first_child(ptr, node->parent, node->offset);
+        }
+        if (node->next_sibiling != 0) {
+            update_prev_sibiling(ptr, node->next_sibiling, node->offset);
+        }
+    }
 
     return OK_NODE_UPDATE;
 }
@@ -143,7 +159,7 @@ void delete_node_with_children_and_next_sibilings(struct file_descriptor* ptr, s
 }
 
 enum node_delete_operation_status delete_node(struct file_descriptor* ptr, struct node* node) {
-    if (!check_exist_node(ptr, node)) {
+    if (!check_exist_and_update_node(ptr, &node)) {
         return NODE_NOT_FOUND_ON_FILE_NODE_DELETE;
     }
     if (node->first_child != 0) {
@@ -169,4 +185,5 @@ enum node_delete_operation_status delete_node(struct file_descriptor* ptr, struc
     update_schema_count(ptr, node->schema->offset, node->schema->count);
     create_block(node->offset, node->elem_size, ptr);
     free(node);
+    return OK_NODE_DELETE;
 }

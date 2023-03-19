@@ -133,6 +133,17 @@ void update_next_sibiling(struct file_descriptor* ptr, size_t node_offset, size_
     write_buffer_to_file(ptr->fd, node_offset + NEXT_SIBILING_OFFSET, &(next_sibiling_offset), sizeof(size_t), 1);
 }
 
+static void update_parent(struct file_descriptor* ptr, size_t child_offset, size_t parent_offset) {
+    write_buffer_to_file(ptr->fd, child_offset + PARENT_OFFSET, &(parent_offset), sizeof(size_t), 1);
+}
+
+void update_parent_on_this_and_next_sibiling(struct file_descriptor* ptr, size_t child_offset, size_t parent_offset) {
+    while (child_offset != 0) {
+        update_parent(ptr, child_offset, parent_offset);
+        child_offset = read_next_sibiling_offset(ptr, child_offset);
+    }
+}
+
 bool compare_node(struct node* first_node, struct node* second_node) {
     if (first_node->offset != second_node->offset) return false;
     if (first_node->elem_size != second_node->elem_size) return false;
@@ -161,10 +172,15 @@ bool compare_node(struct node* first_node, struct node* second_node) {
     return true;
 }
 
-bool check_exist_node(struct file_descriptor* ptr, struct node* node) {
-    struct node* real_node = read_node(ptr, node->offset);
-    bool result = compare_node(node, real_node);
-    free_node(real_node);
+bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node) {
+    struct node* real_node = read_node(ptr, (*node)->offset);
+    bool result = compare_node((*node), real_node);
+    if (result) {
+        free_node(*node);
+        *node = real_node;
+    } else {
+        free_node(real_node);
+    }
     return result;
 }
 

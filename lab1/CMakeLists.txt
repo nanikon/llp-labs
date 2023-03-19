@@ -10,6 +10,7 @@ add_executable(main src/main.cpp
         src/structs/header.h src/structs/header.cpp 
         src/structs/block.h src/structs/block.cpp 
         src/structs/schema.h src/structs/schema.cpp
-        src/api/api.h
+        src/structs/node.h src/structs/node.cpp
+        src/api/api.h src/api/api.cpp
         src/test/unit_test/unit_test.h src/test/unit_test/unit_test.cpp
 )
