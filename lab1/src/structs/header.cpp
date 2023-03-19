@@ -1,31 +1,19 @@
 #include "header.h"
 
-struct file_descriptor* open_file_db(const char* filename) {
-    struct file_descriptor* ptr = (struct file_descriptor*) malloc(sizeof(struct file_descriptor));
-    int32_t fd = open_file(filename);
-    ptr->fd = fd;
-    size_t size = get_file_len(fd);
-    if (size <= 1) {
-        // файл новый, только создался, логика по заполнению хэдера и потом его запись
-    } else {
-        // файл уже существовал, надо только вычитать хедер
-        ptr->header = read_header(fd);
-    }
-    return ptr;
-}
-
-void close_file_db(struct file_descriptor* ptr) {
-    write_header(ptr);
-    close_file(ptr->fd);
-    free(ptr->header);
-    free(ptr);
-    ptr = NULL;
-}
-
 struct tree_header* read_header(int32_t fd) {
-    return NULL;
+    struct tree_header* header = (struct tree_header*) malloc(sizeof(struct tree_header));
+    size_t offset = read_buffer_from_file(fd, 0, &(header->first_node), sizeof(size_t), 1);
+    offset = read_buffer_from_file(fd, offset, &(header->first_schema), sizeof(size_t), 1);
+    offset = read_buffer_from_file(fd, offset, &(header->last_schema), sizeof(size_t), 1);
+    offset = read_buffer_from_file(fd, offset, &(header->first_free_block), sizeof(size_t), 1);
+    offset = read_buffer_from_file(fd, offset, &(header->end_file), sizeof(size_t), 1);
+    return header;
 }
 
 void write_header(struct file_descriptor* ptr) {
-    
+    size_t offset = write_buffer_to_file(ptr->fd, 0, &(ptr->header->first_node), sizeof(size_t), 1);
+    offset = write_buffer_to_file(ptr->fd, 0, &(ptr->header->first_schema), sizeof(size_t), 1);
+    offset = write_buffer_to_file(ptr->fd, 0, &(ptr->header->last_schema), sizeof(size_t), 1);
+    offset = write_buffer_to_file(ptr->fd, 0, &(ptr->header->first_free_block), sizeof(size_t), 1);
+    offset = write_buffer_to_file(ptr->fd, 0, &(ptr->header->end_file), sizeof(size_t), 1);
 }

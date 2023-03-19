@@ -13,6 +13,9 @@
 
 //file
 
+struct file_descriptor* open_file_db(const char* filename);
+void close_file_db(struct file_descriptor* ptr);
+
 //schema 
 
 enum schema_delete_operation_status {

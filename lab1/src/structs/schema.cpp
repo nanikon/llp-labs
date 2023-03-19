@@ -42,7 +42,7 @@ void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size
 
 struct schema* read_first_schema(struct file_descriptor* ptr) {
     size_t first_schema_offset = read_schema_next(ptr, ptr->header->first_schema);
-    if (first_schema_offset == NULL) {
+    if (first_schema_offset == 0) {
         return NULL;
     }
     return read_schema(ptr, first_schema_offset);
