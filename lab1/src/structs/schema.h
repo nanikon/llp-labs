@@ -48,12 +48,14 @@ struct schema {
 struct schema* read_first_schema(struct file_descriptor* ptr);
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset);
 size_t read_schema_next(struct file_descriptor* ptr, size_t schema_offset);
+size_t read_schema_count(struct file_descriptor* ptr, size_t schema_offset);
 
 void write_schema(struct file_descriptor* ptr, struct schema* schema);
 void update_schema_next(struct file_descriptor* ptr, size_t schema_offset, size_t next);
 void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size_t count);
 
 void free_schema(struct schema* schema);
+bool check_exist_schema(struct file_descriptor* ptr, struct schema* schema);
 // вспомогательные функции, потом убрать из интерфейса
 void print_schema(struct schema* schema);
 

@@ -87,3 +87,24 @@ void free_schema(struct schema* schema) {
     delete[] schema->name;
     free(schema);
 }
+
+bool compare_schema(struct schema* first_schema, struct schema* second_schema) {
+    if (first_schema->offset != second_schema->offset) return false;
+    if (first_schema->elem_size != second_schema->elem_size) return false;
+    if (first_schema->next != second_schema->next) return false;
+    if (first_schema->count != second_schema->count) return false;
+    if (strcmp(first_schema->name, second_schema->name) != 0) return false;
+    if (first_schema->attributes->size() != second_schema->attributes->size()) return false;
+    for (int i = 0; i < first_schema->attributes->size(); i++) {
+        if (first_schema->attributes->at(i)->type != second_schema->attributes->at(i)->type) return false;
+        if (strcmp(first_schema->attributes->at(i)->name, second_schema->attributes->at(i)->name) != 0) return false;
+    }
+    return true;
+}
+
+bool check_exist_schema(struct file_descriptor* ptr, struct schema* schema) {
+    struct schema* real_schema = read_schema(ptr, schema->offset);
+    bool result = compare_schema;
+    free_schema(real_schema);
+    return result;
+}
