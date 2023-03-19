@@ -15,6 +15,12 @@ struct attribute {
     union data value; 
 };
 
+#define FIRST_CHILD_OFFSET sizeof(size_t) * 3
+#define PREV_SIBILING_OFFSET sizeof(size_t) * 4
+#define NEXT_SIBILING_OFFSET sizeof(size_t) * 5
+#define NODE_ELEM_SIZE_OFFSET 0
+#define NODE_SCHEMA_OFFSET sizeof(size_t)
+#define NODE_HEADER_SIZE sizeof(size_t) * 6
 struct node {
     size_t offset;
     size_t elem_size;
@@ -27,6 +33,16 @@ struct node {
 
     std::vector<struct attribute*>* attributes;
 };
+/* Как нода хранится в файле
+    - длина блока в котором записан
+    - смещение схемы
+    - смещение родителя
+    - смещение первого ребенка
+    - смещение предыдущего сибилинга
+    - смещение следующего сибилинга
+    далее идет список аттрибутов (их количество берется из схемы):
+        - значение аттрибута. Тип берется из схемы аттрибута. Если int, double, bool - то так и записаны, если char* - то длина + сама строка (идентификатор аттрибута не нужен, т.к. полагаемся на порядок)
+*/
 
 struct node* read_node(struct file_descriptor* ptr, size_t offset);
 size_t read_first_child_offset(struct file_descriptor* ptr, size_t node_offset);

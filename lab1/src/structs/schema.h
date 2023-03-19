@@ -15,12 +15,13 @@ enum value_type {
     STRING
 };
 
+#define ATTRIBUTE_SCHEMA_SIZE sizeof(enum value_type) + sizeof(const char*)
 struct attribute_schema { 
     enum value_type type;
     const char* name;
 };
 
-#define STRUCT_SHEMA_HEADER_SIZE sizeof(size_t) * 5 // для записи в файл - четыре поля + длина name 
+#define STRUCT_SCHEMA_HEADER_SIZE sizeof(size_t) * 5 // для записи в файл - четыре поля + длина name 
 #define SCHEMA_NEXT_OFFSET sizeof(size_t) * 2
 #define SCHEMA_COUNT_OFFSET sizeof(size_t) * 3
 struct schema {
@@ -55,6 +56,7 @@ void update_schema_next(struct file_descriptor* ptr, size_t schema_offset, size_
 void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size_t count);
 
 void free_schema(struct schema* schema);
+bool compare_schema(struct schema* first_schema, struct schema* second_schema);
 bool check_exist_schema(struct file_descriptor* ptr, struct schema* schema);
 // вспомогательные функции, потом убрать из интерфейса
 void print_schema(struct schema* schema);

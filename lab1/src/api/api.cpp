@@ -21,10 +21,17 @@ Schema_Iter read_schemas(struct file_descriptor* ptr) {
     return Schema_Iter(ptr);
 }
 
+struct attribute_schema* create_attribute(enum value_type type, char* name) {
+    struct attribute_schema* attr = (struct attribute_schema*) malloc(sizeof(struct attribute_schema));
+    attr->type = type;
+    attr->name = name;
+    return attr;
+}
+
 struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vector<struct attribute_schema*>* attributes) {
-    struct schema* schema = (struct schema*) malloc(sizeof(struct schema));
-    schema->name = name;
+    struct schema* schema = (struct schema*) calloc(1, sizeof(struct schema));
     schema->attributes = attributes;
+    schema->name = name;
     schema->count = 0;
     schema->next = NULL;
     write_schema(ptr, schema);
@@ -44,11 +51,18 @@ enum schema_delete_operation_status delete_schema(struct file_descriptor* ptr, s
     return OK_SCHEMA_DELETE;
 }
 
+static struct attribute* create_attribute(struct attribute_schema* schema, union data value) {
+    struct attribute* attr = (struct attribute*) calloc(1, sizeof(struct attribute));
+    attr->schema = schema;
+    attr->value = value;
+    return attr;
+}
+
 enum node_create_operation_status create_node(
     struct file_descriptor* ptr, 
     struct schema* schema, 
     struct node* parent, 
-    std::vector<struct attribute*>* attributes, 
+    std::unordered_map<struct attribute_schema*, union data> attributes,
     struct node** node
 ) {
     if (!check_exist_schema(ptr, schema)) {
@@ -59,17 +73,13 @@ enum node_create_operation_status create_node(
     } else if (!check_exist_node(ptr, parent)) {
         return PARENT_NOT_FOUND_ON_FILE;
     }
+
+    std::vector<struct attribute*>* real_attributes = new std::vector<struct attribute*>;
     for (int i = 0; i < schema->attributes->size(); i++) {
-        bool is_found = false;
-        for (int j = 0; j < attributes->size(); j++) {
-            if ((schema->attributes->at(i)->type == attributes->at(j)->schema->type) && (strcmp(schema->attributes->at(i)->name, attributes->at(j)->schema->name) == 0)) {
-                is_found = true;
-                break;
-            }
-        }
-        if (!is_found) {
+        if (!attributes.contains(schema->attributes->at(i))) {
             return ATTRIBUTE_NOT_FOUND;
         }
+        real_attributes->push_back(create_attribute(schema->attributes->at(i), attributes[schema->attributes->at(i)]));
     }
     if (schema->attributes->size() != attributes->size()) return WROND_ATTRIBUTE_NODE_CREATE;
 
@@ -82,29 +92,34 @@ enum node_create_operation_status create_node(
     schema->count++;
     update_schema_count(ptr, schema->offset, schema->count);
     write_node(ptr, *node);
+    update_prev_sibiling(ptr, parent->first_child, node->offset);
+    parent->first_child = (*node)->offset;
+    update_first_child(ptr, parent->offset, node->offset);
     
     return OK_NODE_CREATE;
 }
 
-enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::vector<struct attribute*>* attributes) {
+enum node_update_operation_status update_node(struct file_descriptor* ptr, struct node* node, std::unordered_map<struct attribute_schema*, union data> attributes) {
     if (!check_exist_node(ptr, node)) {
         return NODE_NOT_FOUND_ON_FILE_NODE_UPDATE;
     }
-    for (int i = 0; i < attributes->size(); i++) {
-        bool is_found = false;
-        for (int j = 0; j < node->attributes->size(); j++) {
-            if ((attributes->at(i)->schema->type == node->attributes->at(j)->schema->type) && (strcmp(attributes->at(i)->schema->name, node->attributes->at(j)->schema->name) == 0)) {
-                is_found = true;
-                node->attributes->at(j)->value = attributes->at(i)->value;
-                break;
-            }
-        }
-        if (!is_found) {
-            return WRONG_ATTRIBUTE_NOTE_UPDATE;
+    size_t changed_attrs = 0;
+    std::vector<struct attribute*>* new_attributes = new std::vector<struct attribute*>;
+    for (int i = 0; i < node->attributes->size(); i++) {
+        if (attributes.contains(node->attributes->at(i)->schema)) {
+            new_attributes->push_back(create_attribute(node->attributes->at(i)->schema, attributes[node->attributes->at(i)->schema]));
+            changed_attrs++;
+        } else {
+            new_attributes->push_back(node->attributes->at(i));
         }
     }
-    // create_block() - ? здесь или не здесь
+    if (changed_attrs != attributes.size()) {
+        return WRONG_ATTRIBUTE_NOTE_UPDATE;
+    }
+    free(node->attributes);
+    node->attributes = new_attributes;
 
+    // create_block() - ? здесь или не здесь
     write_node(ptr, node);
 
     return OK_NODE_UPDATE;

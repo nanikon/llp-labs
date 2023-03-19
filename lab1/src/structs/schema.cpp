@@ -5,9 +5,9 @@ void write_schema(struct file_descriptor* ptr, struct schema* schema) {
     size_t attr_count = schema->attributes->size();
     size_t attr_len = 0;
     for (int i = 0; i < schema->attributes->size(); i++) {
-        attr_len += sizeof(struct attribute_schema) + strlen(schema->attributes->at(i)->name);
+        attr_len += ATTRIBUTE_SCHEMA_SIZE + strlen(schema->attributes->at(i)->name); // size_t на длину имени берется из ATTRIBUTE_SCHEMA_SIZE вместо char*
     }
-    size_t write_size = STRUCT_SHEMA_HEADER_SIZE + name_len + attr_len;
+    size_t write_size = STRUCT_SCHEMA_HEADER_SIZE + name_len + attr_len; // size_t на длину имени берется из STRUCT_SCHEMA_HEADER_SIZE
     schema->elem_size = write_size;
     schema->offset = find_free_space(ptr->header->first_free_block, write_size, ptr);
     if (schema->offset == 0) {
@@ -50,8 +50,14 @@ struct schema* read_first_schema(struct file_descriptor* ptr) {
 
 size_t read_schema_next(struct file_descriptor* ptr, size_t schema_offset) {
     size_t next = 0;
-    read_buffer_from_file(ptr->fd, schema_offset, &next, sizeof(size_t), 1);
+    read_buffer_from_file(ptr->fd, schema_offset + SCHEMA_NEXT_OFFSET, &next, sizeof(size_t), 1);
     return next;
+}
+
+size_t read_schema_count(struct file_descriptor* ptr, size_t schema_offset) {
+    size_t count = 0;
+    read_buffer_from_file(ptr->fd, schema_offset + SCHEMA_COUNT_OFFSET, &count, sizeof(size_t), 1);
+    return count;
 }
 
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
@@ -61,8 +67,9 @@ struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
     size_t elem_size = 0;
     offset = read_buffer_from_file(ptr->fd, offset, &elem_size, sizeof(size_t), 1);
 
-    struct schema* schema = (struct schema*) malloc(elem_size + sizeof(char) * (attribute_count + 1)); // добавочек - на нуль-терминаторы для строк
+    struct schema* schema = (struct schema*) malloc(sizeof(struct schema)); // добавочек - на нуль-терминаторы для строк
     schema->elem_size = elem_size;
+    schema->offset = schema_offset;
 
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->next), sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->count), sizeof(size_t), 1);  
@@ -104,7 +111,7 @@ bool compare_schema(struct schema* first_schema, struct schema* second_schema) {
 
 bool check_exist_schema(struct file_descriptor* ptr, struct schema* schema) {
     struct schema* real_schema = read_schema(ptr, schema->offset);
-    bool result = compare_schema;
+    bool result = compare_schema(schema, real_schema);
     free_schema(real_schema);
     return result;
 }
