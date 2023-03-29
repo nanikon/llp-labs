@@ -12,6 +12,12 @@ size_t read_next_sibiling_offset(struct file_descriptor* ptr, size_t node_offset
     return next_sibiling_offset;    
 }
 
+size_t read_parent_offset(struct file_descriptor* ptr, size_t node_offset){
+    size_t parent_offset = 0;
+    read_buffer_from_file(ptr->fd, node_offset + PARENT_OFFSET, &parent_offset, sizeof(size_t), 1);
+    return parent_offset;    
+}
+
 size_t read_node_len(struct file_descriptor* ptr, size_t node_offset) {
     size_t node_len = 0;
     read_buffer_from_file(ptr->fd, node_offset + NODE_ELEM_SIZE_OFFSET, &node_len, sizeof(size_t), 1);
@@ -59,6 +65,10 @@ struct node* read_node(struct file_descriptor* ptr, size_t offset) {
     node->attributes = attributes;
 
     return node;
+}
+
+struct node* read_first_node(struct file_descriptor* ptr) {
+    return read_node(ptr, ptr->header->first_node);
 }
 
 void write_node(struct file_descriptor* ptr, struct node* node) {
@@ -193,4 +203,13 @@ void free_node(struct node* node) {
     }
     free(node->attributes);
     free(node);
+}
+
+void replace_node(struct file_descriptor* ptr, size_t new_offset, struct node** node) {
+    free(*node);
+    *node = read_node(ptr, new_offset);
+}
+
+bool check_not_root(struct file_descriptor* ptr, size_t node_offset) {
+    return ptr->header->first_node != node_offset;
 }

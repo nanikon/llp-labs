@@ -87,4 +87,142 @@ enum node_delete_operation_status delete_node(struct file_descriptor* ptr, struc
 
 // node - search
 
+enum digit_operations {
+    DIGIT_EQUAL,
+    DIGIT_NOT_EQUAL,
+    DIGIT_LESS,
+    DIGIT_LESS_OR_EQUAL,
+    DIGIT_GREAT_OR_EQUAL,
+    DIGIT_GREAT
+};
+
+enum bool_operations {
+    BOOL_EQUAL,
+    BOOL_NOT_EQUAL
+};
+
+enum string_operations {
+    STRING_EQUAL,
+    STRING_NOT_EQUAL,
+    STRING_CONTAINS
+};
+
+struct int_condition {
+    int value;
+    enum digit_operations operation;
+};
+
+struct double_condition {
+    double value;
+    enum digit_operations operation;
+};
+
+struct bool_condition {
+    bool value;
+    enum bool_operations operation;
+};
+
+struct string_condition {
+    char* value;
+    enum string_operations operation;
+};
+
+struct attr_condition {
+    enum value_type type;
+    char* name;
+    union {
+        struct int_condition* int_c;
+        struct double_condition* double_c;
+        struct bool_condition* bool_c;
+        struct string_condition* string_c;
+    };
+};
+
+struct schema_condition {
+    struct schema* schema;
+};
+
+enum node_condition_type {
+    ATTR,
+    SCHEMA
+};
+
+struct node_condition {
+    int8_t node_order; // понадеюсь что более глубоких не будет
+    enum node_condition_type type;
+    union {
+        struct attr_condition* attr_c;
+        struct schema_condition* schema_c;
+    };
+};
+
+enum condition_type {
+    OR,
+    AND,
+    NOT,
+    NODE
+};
+
+struct search_node {
+    enum condition_type type;
+    union {
+        struct and_condition* and_c;
+        struct or_condition* or_c;
+        struct not_condition* not_c;
+        struct node_condition* node_c;
+    };
+};
+
+struct and_condition {
+    struct search_node* a;
+    struct search_node* b;
+};
+
+struct or_condition {
+    struct search_node* a;
+    struct search_node* b;
+};
+
+struct not_condition {
+    struct search_node* a;
+};
+
+/**
+ * @param attr_name - должен быть из кучи, т.к. очищается при очистке итератора/условия. Относится ко всем make-ам
+*/
+struct search_node* make_int_attr_cond(int8_t node_order, char* attr_name, enum digit_operations operation, int value);
+struct search_node* make_double_attr_cond(int8_t node_order, char* attr_name, enum digit_operations operation, double value);
+struct search_node* make_bool_attr_cond(int8_t node_order, char* attr_name, enum bool_operations operation, bool value);
+struct search_node* make_string_attr_cond(int8_t node_order, char* attr_name, enum string_operations operation, char* value);
+/**
+ * @param schema - очищается при очистке итератора
+*/
+struct search_node* make_schema_cond(int8_t node_order, struct schema* schema); 
+struct search_node* make_and_cond(struct search_node* a, struct search_node* b);
+struct search_node* make_or_cond(struct search_node* a, struct search_node* b);
+struct search_node* make_not_cond(struct search_node* a);
+
+/**
+ * на случай если созданное условие в итоге не понадобилось, а память надо отдать
+*/
+void free_search_node(struct search_node* cond);
+
+typedef struct Search_Iter {
+    struct search_node* cond;
+    struct node* node;
+    struct file_descriptor* ptr;
+    bool is_valid = true;
+
+    Search_Iter(struct file_descriptor* ptr, struct search_node* cond) : ptr(ptr), cond(cond) {
+        this->node = read_first_node(ptr);
+        this->is_valid = this->next(); // возможно переделать, т.к. сразу должна идти на детей первой ноды
+    } 
+
+    bool next();
+    struct node* operator*();
+    void free();
+} Search_Iter;
+
+Search_Iter find_nodes(struct file_descriptor* ptr, struct search_node* cond);
+
 #endif

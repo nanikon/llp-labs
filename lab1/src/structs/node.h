@@ -45,9 +45,14 @@ struct node {
         - значение аттрибута. Тип берется из схемы аттрибута. Если int, double, bool - то так и записаны, если char* - то длина + сама строка (идентификатор аттрибута не нужен, т.к. полагаемся на порядок)
 */
 
+/**
+ * именно root, который не должен быть виден пользователям
+*/
+struct node* read_first_node(struct file_descriptor* ptr);
 struct node* read_node(struct file_descriptor* ptr, size_t offset);
 size_t read_first_child_offset(struct file_descriptor* ptr, size_t node_offset);
 size_t read_next_sibiling_offset(struct file_descriptor* ptr, size_t node_offset);
+size_t read_parent_offset(struct file_descriptor* ptr, size_t node_offset);
 size_t read_node_len(struct file_descriptor* ptr, size_t node_offset);
 size_t read_node_schema_offset(struct file_descriptor* ptr, size_t node_offset);
 
@@ -59,6 +64,8 @@ void update_prev_sibiling(struct file_descriptor* ptr, size_t node_offset, size_
 void update_next_sibiling(struct file_descriptor* ptr, size_t node_offset, size_t next_sibiling_offset);
 
 bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node);
+bool check_not_root(struct file_descriptor* ptr, size_t node_offset);
+void replace_node(struct file_descriptor* ptr, size_t new_offset, struct node** node);
 
 void free_node(struct node* node);
 
