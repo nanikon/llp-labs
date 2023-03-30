@@ -52,6 +52,7 @@ struct node* read_first_node(struct file_descriptor* ptr);
 struct node* read_node(struct file_descriptor* ptr, size_t offset);
 size_t read_first_child_offset(struct file_descriptor* ptr, size_t node_offset);
 size_t read_next_sibiling_offset(struct file_descriptor* ptr, size_t node_offset);
+size_t read_prev_sibiling_offset(struct file_descriptor* ptr, size_t node_offset);
 size_t read_parent_offset(struct file_descriptor* ptr, size_t node_offset);
 size_t read_node_len(struct file_descriptor* ptr, size_t node_offset);
 size_t read_node_schema_offset(struct file_descriptor* ptr, size_t node_offset);

@@ -12,6 +12,12 @@ size_t read_next_sibiling_offset(struct file_descriptor* ptr, size_t node_offset
     return next_sibiling_offset;    
 }
 
+size_t read_prev_sibiling_offset(struct file_descriptor* ptr, size_t node_offset) {
+    size_t prev_sibiling_offset = 0;
+    read_buffer_from_file(ptr->fd, node_offset + PREV_SIBILING_OFFSET, &prev_sibiling_offset, sizeof(size_t), 1);
+    return prev_sibiling_offset; 
+}
+
 size_t read_parent_offset(struct file_descriptor* ptr, size_t node_offset){
     size_t parent_offset = 0;
     read_buffer_from_file(ptr->fd, node_offset + PARENT_OFFSET, &parent_offset, sizeof(size_t), 1);
@@ -155,13 +161,9 @@ void update_parent_on_this_and_next_sibiling(struct file_descriptor* ptr, size_t
     }
 }
 
-bool compare_node(struct node* first_node, struct node* second_node) {
-    if (first_node->offset != second_node->offset) return false;
+bool compare_not_full_node(struct node* first_node, struct node* second_node) {
+    if (first_node->offset != second_node->offset) return false; // эти два должны быть здесь или нет?
     if (first_node->elem_size != second_node->elem_size) return false;
-    if (first_node->parent != second_node->parent) return false;
-    if (first_node->first_child != second_node->first_child) return false;
-    if (first_node->prev_sibiling != second_node->prev_sibiling) return false;
-    if (first_node->next_sibiling != second_node->next_sibiling) return false;
     if (!compare_schema(first_node->schema, second_node->schema)) return false;
     if (first_node->attributes->size() != second_node->attributes->size()) return false;
     for (int i = 0; i < first_node->attributes->size(); i++) {
@@ -184,15 +186,25 @@ bool compare_node(struct node* first_node, struct node* second_node) {
     return true;
 }
 
+bool compare_node(struct node* first_node, struct node* second_node) {
+    if (first_node->parent != second_node->parent) return false;
+    if (first_node->first_child != second_node->first_child) return false;
+    if (first_node->prev_sibiling != second_node->prev_sibiling) return false;
+    if (first_node->next_sibiling != second_node->next_sibiling) return false;
+    if (!compare_not_full_node(first_node, second_node)) return false;
+    return true;
+}
+
 bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node) {
     struct node* real_node = read_node(ptr, (*node)->offset);
-    bool result = compare_node((*node), real_node);
+    bool result = compare_not_full_node((*node), real_node);
     if (result) {
-        free_node(*node);
-        *node = real_node;
-    } else {
-        free_node(real_node);
+        (*node)->parent = real_node->parent;
+        (*node)->first_child = real_node->first_child;
+        (*node)->prev_sibiling = real_node->prev_sibiling;
+        (*node)->next_sibiling = real_node->next_sibiling;
     }
+    free_node(real_node);
     return result;
 }
 
@@ -204,7 +216,6 @@ void free_node(struct node* node) {
         free(node->attributes->at(i));
     }
     free(node->attributes);
-    free_schema(node->schema);
     free(node);
 }
 

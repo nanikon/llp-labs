@@ -116,14 +116,14 @@ enum node_delete_operation_status delete_node(struct file_descriptor* ptr, struc
     }
 
     // удалить себя у родителей и братьев
-    if(node->prev_sibiling == 0){
-        if(node->next_sibiling == 0){
+    if (node->prev_sibiling == 0) {
+        if (node->next_sibiling == 0) {
             update_first_child(ptr, node->parent, 0);
-        }else{
+        } else {
             update_first_child(ptr, node->parent, node->next_sibiling);
             update_prev_sibiling(ptr, node->next_sibiling, 0);
         }
-    }else if(node->next_sibiling != 0) {
+    } else if (node->next_sibiling != 0) {
         update_prev_sibiling(ptr, node->next_sibiling, node->prev_sibiling);
         update_next_sibiling(ptr, node->prev_sibiling, node->next_sibiling);
     } else { 
@@ -133,6 +133,6 @@ enum node_delete_operation_status delete_node(struct file_descriptor* ptr, struc
     node->schema->count--;
     update_schema_count(ptr, node->schema->offset, node->schema->count);
     create_block(node->offset, node->elem_size, ptr);
-    free(node);
+    free_node(node);
     return OK_NODE_DELETE;
 }

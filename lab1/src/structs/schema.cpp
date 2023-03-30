@@ -105,7 +105,7 @@ bool compare_schema(struct schema* first_schema, struct schema* second_schema) {
     if (first_schema->offset != second_schema->offset) return false;
     if (first_schema->elem_size != second_schema->elem_size) return false;
     if (first_schema->next != second_schema->next) return false;
-    if (first_schema->count != second_schema->count) return false;
+    //if (first_schema->count != second_schema->count) return false; нужно только для теста, а так меняется слишком часто
     if (strcmp(first_schema->name, second_schema->name) != 0) return false;
     if (first_schema->attributes->size() != second_schema->attributes->size()) return false;
     for (int i = 0; i < first_schema->attributes->size(); i++) {
