@@ -9,12 +9,15 @@ bool Schema_Iter::next() {
         is_valid = false;
         return false;
     }
+    free_schema(this->schema);
     this->schema = read_schema(this->ptr, this->schema->next);
     return true;
 }
 
 void Schema_Iter::free() {
-    free_schema(this->schema);
+    if (this->schema != NULL) {
+        free_schema(this->schema);
+    }
 }
 
 Schema_Iter read_schemas(struct file_descriptor* ptr) {
@@ -34,6 +37,7 @@ struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vecto
     copy_str_to_heap(&schema->name, name);
     schema->count = 0;
     schema->next = 0;
+    schema->prev = ptr->header->last_schema;
     write_schema(ptr, schema);
     update_schema_next(ptr, ptr->header->last_schema, schema->offset);
     ptr->header->last_schema = schema->offset;
@@ -47,6 +51,13 @@ enum schema_delete_operation_status delete_schema(struct file_descriptor* ptr, s
     }
     if (!check_exist_schema(ptr, schema)) {
         return NOT_FOUND_ON_FILE;
+    }
+    if (schema->next != 0) {
+        update_schema_prev(ptr, schema->next, schema->prev);
+        update_schema_next(ptr, schema->prev, schema->next);
+    } else {
+        update_schema_next(ptr, schema->prev, 0);
+        ptr->header->last_schema = schema->prev;
     }
     create_block(schema->offset, schema->elem_size, ptr);
     free_schema(schema);

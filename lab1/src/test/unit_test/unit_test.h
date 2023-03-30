@@ -5,7 +5,7 @@
 #include "../../api/api.h"
 #include <assert.h>
 
-#define UNIT_TEST_COUNT 8
+#define UNIT_TEST_COUNT 9
 
 typedef void (*unit_test_func)();
 

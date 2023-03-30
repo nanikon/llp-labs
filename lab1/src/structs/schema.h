@@ -21,13 +21,15 @@ struct attribute_schema {
     const char* name;
 };
 
-#define STRUCT_SCHEMA_HEADER_SIZE sizeof(size_t) * 5 // для записи в файл - четыре поля + длина name 
+#define STRUCT_SCHEMA_HEADER_SIZE sizeof(size_t) * 6 // для записи в файл - четыре поля + длина name 
 #define SCHEMA_NEXT_OFFSET sizeof(size_t) * 2
-#define SCHEMA_COUNT_OFFSET sizeof(size_t) * 3
+#define SCHEMA_PREV_OFFSET sizeof(size_t) * 3
+#define SCHEMA_COUNT_OFFSET sizeof(size_t) * 4
 struct schema {
     size_t offset; // не записывается в файл, вместо него кол-во аттрибутов
     size_t elem_size; // длина блока в файле в котором записана схема - может быть больше фактической длины
     size_t next;
+    size_t prev;
     size_t count; // кол-во вершин с этой схемой - нужно для удаления, точнее для его запрещения
     const char* name; // нуль-терминированная строка
     std::vector<struct attribute_schema*>* attributes;
@@ -50,10 +52,12 @@ struct schema* read_first_schema(struct file_descriptor* ptr);
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset);
 size_t read_schema_next(struct file_descriptor* ptr, size_t schema_offset);
 size_t read_schema_count(struct file_descriptor* ptr, size_t schema_offset);
+size_t read_schema_prev(struct file_descriptor* ptr, size_t schema_offset);
 
 void write_schema(struct file_descriptor* ptr, struct schema* schema);
 void update_schema_next(struct file_descriptor* ptr, size_t schema_offset, size_t next);
 void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size_t count);
+void update_schema_prev(struct file_descriptor* ptr, size_t schema_offset, size_t prev);
 
 void free_schema(struct schema* schema);
 bool compare_schema(struct schema* first_schema, struct schema* second_schema);

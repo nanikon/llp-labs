@@ -22,6 +22,7 @@ void write_schema(struct file_descriptor* ptr, struct schema* schema) {
     offset = write_buffer_to_file(ptr->fd, offset, &(attr_count), sizeof(size_t), 1);
     offset = write_buffer_to_file(ptr->fd, offset, &(schema->elem_size), sizeof(size_t), 1);
     offset = write_buffer_to_file(ptr->fd, offset, &(schema->next), sizeof(size_t), 1);
+    offset = write_buffer_to_file(ptr->fd, offset, &(schema->prev), sizeof(size_t), 1);
     offset = write_buffer_to_file(ptr->fd, offset, &(schema->count), sizeof(size_t), 1);
     offset = write_null_term_str_to_file(ptr->fd, offset, schema->name);
     for (int i = 0; i < schema->attributes->size(); i++) {
@@ -36,6 +37,10 @@ void update_schema_next(struct file_descriptor* ptr, size_t schema_offset, size_
 
 void update_schema_count(struct file_descriptor* ptr, size_t schema_offset, size_t count) {
     write_buffer_to_file(ptr->fd, schema_offset + SCHEMA_COUNT_OFFSET, &count, sizeof(size_t), 1);
+}
+
+void update_schema_prev(struct file_descriptor* ptr, size_t schema_offset, size_t prev) {
+    write_buffer_to_file(ptr->fd, schema_offset + SCHEMA_PREV_OFFSET, &prev, sizeof(size_t), 1);
 }
 
 struct schema* read_first_schema(struct file_descriptor* ptr) {
@@ -58,6 +63,12 @@ size_t read_schema_count(struct file_descriptor* ptr, size_t schema_offset) {
     return count;
 }
 
+size_t read_schema_prev(struct file_descriptor* ptr, size_t schema_offset) {
+    size_t prev = 0;
+    read_buffer_from_file(ptr->fd, schema_offset + SCHEMA_PREV_OFFSET, &prev, sizeof(size_t), 1);
+    return prev;
+}
+
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
     size_t schema_offset = offset;
     struct schema* schema = (struct schema*) malloc(sizeof(struct schema));
@@ -66,6 +77,7 @@ struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
     offset = read_buffer_from_file(ptr->fd, offset, &attribute_count, sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->elem_size), sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->next), sizeof(size_t), 1);
+    offset = read_buffer_from_file(ptr->fd, offset, &(schema->prev), sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->count), sizeof(size_t), 1);  
     offset = read_null_term_str_from_file(ptr->fd, offset, &(schema->name));
 

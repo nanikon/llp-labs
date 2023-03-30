@@ -226,6 +226,67 @@ void test_open_close_file() {
     printf("test open|close file module finished successful\n");
 }
 
+void test_schema_api_module() {
+    remove("test");
+    struct file_descriptor* ptr = open_file_db("test");
+
+    Schema_Iter iter = read_schemas(ptr);
+    assert(iter.is_valid == false);
+    iter.free();
+
+    std::vector<struct attribute_schema*>* schema_attr = new std::vector<struct attribute_schema*>;
+    schema_attr->push_back(create_attribute(INT, "first_attr"));
+    struct schema* first_schema = create_schema(ptr, "first schema", schema_attr);
+    assert(ptr->header->last_schema == first_schema->offset);
+    assert(ptr->header->first_schema != first_schema->offset);
+    assert(read_schema_next(ptr, ptr->header->first_schema) == first_schema->offset);
+    assert(first_schema->prev = ptr->header->first_schema);
+
+    std::vector<struct attribute_schema*>* other_schema_attr = new std::vector<struct attribute_schema*>;
+    other_schema_attr->push_back(create_attribute(DOUBLE, "double attr"));
+    struct schema* second_schema = create_schema(ptr, "second schema", other_schema_attr);
+    assert(ptr->header->last_schema == second_schema->offset);
+    assert(ptr->header->first_schema != second_schema->offset);
+    first_schema = read_schema(ptr, first_schema->offset); 
+    assert(first_schema->next == second_schema->offset);
+    assert(second_schema->prev == first_schema->offset);
+
+    iter = read_schemas(ptr);
+    assert(iter.is_valid == true);
+    assert(compare_schema(iter.operator*(), first_schema) == true);
+    assert(iter.next() == true);
+    assert(compare_schema(iter.operator*(), second_schema) == true);
+    assert(iter.next() == false);
+    iter.free();
+
+    assert(delete_schema(ptr, first_schema) == OK_SCHEMA_DELETE);
+    second_schema = read_schema(ptr, second_schema->offset);
+    assert(read_schema_next(ptr, ptr->header->first_schema) == second_schema->offset);
+    assert(second_schema->prev == ptr->header->first_schema);
+
+    iter = read_schemas(ptr);
+    assert(iter.is_valid == true);
+    assert(compare_schema(iter.operator*(), second_schema) == true);
+    assert(iter.next() == false);
+    iter.free();
+
+    std::vector<struct attribute_schema*>* third_schema_attr = new std::vector<struct attribute_schema*>;
+    other_schema_attr->push_back(create_attribute(BOOL, "ba"));
+    struct schema* third_schema = create_schema(ptr, "ts", third_schema_attr);
+    assert(ptr->header->last_schema == third_schema->offset);
+    assert(third_schema->offset < second_schema->offset);
+
+    assert(delete_schema(ptr, third_schema) ==  OK_SCHEMA_DELETE);
+    second_schema = read_schema(ptr, second_schema->offset);
+    assert(ptr->header->last_schema == second_schema->offset);
+    assert(second_schema->next == 0);
+
+    free_schema(second_schema);
+    printf("free second schema\n");
+    close_file_db(ptr);
+    printf("test create|delete|search schema module finished successful\n");
+}
+
 unit_test_func unit_tests[UNIT_TEST_COUNT] = {
     test_io_module,
     test_str_io_module,
@@ -234,5 +295,6 @@ unit_test_func unit_tests[UNIT_TEST_COUNT] = {
     test_schema_io_module,
     test_node_io_module,
     test_create_delete_block,
-    test_open_close_file
+    test_open_close_file,
+    test_schema_api_module
 };
