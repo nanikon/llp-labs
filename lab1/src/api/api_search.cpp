@@ -64,7 +64,7 @@ bool check_string(struct string_condition* cond, struct attribute* attr) {
 
 bool check_attr(struct node_condition* node_c, struct node* candidat) {
     for (int i = 0; i < candidat->attributes->size(); i++) {
-        if (node_c->attr_c->type == candidat->attributes->at(i)->schema->type && node_c->attr_c->name == candidat->attributes->at(i)->schema->name) {
+        if (node_c->attr_c->type == candidat->attributes->at(i)->schema->type && strcmp(node_c->attr_c->name, candidat->attributes->at(i)->schema->name) == 0) {
             switch (node_c->attr_c->type) {
                 case INT:
                     return check_int(node_c->attr_c->int_c, candidat->attributes->at(i));
@@ -217,7 +217,7 @@ struct search_node* make_int_attr_cond(int8_t node_order, char* attr_name, enum 
 
     struct attr_condition* attr_cond = (struct attr_condition*) malloc(sizeof(struct attr_condition));
     attr_cond->type = INT;
-    attr_cond->name = attr_name;
+    copy_str_to_heap((const char**) &attr_cond->name, attr_name);
     attr_cond->int_c = int_cond;
 
     struct node_condition* node_cond = (struct node_condition*) malloc(sizeof(struct node_condition));
@@ -238,7 +238,7 @@ struct search_node* make_double_attr_cond(int8_t node_order, char* attr_name, en
 
     struct attr_condition* attr_cond = (struct attr_condition*) malloc(sizeof(struct attr_condition));
     attr_cond->type = DOUBLE;
-    attr_cond->name = attr_name;
+    copy_str_to_heap((const char**) &attr_cond->name, attr_name);
     attr_cond->double_c = double_cond;
 
     struct node_condition* node_cond = (struct node_condition*) malloc(sizeof(struct node_condition));
@@ -259,7 +259,7 @@ struct search_node* make_bool_attr_cond(int8_t node_order, char* attr_name, enum
 
     struct attr_condition* attr_cond = (struct attr_condition*) malloc(sizeof(struct attr_condition));
     attr_cond->type = BOOL;
-    attr_cond->name = attr_name;
+    copy_str_to_heap((const char**) &attr_cond->name, attr_name);
     attr_cond->bool_c = bool_cond;
 
     struct node_condition* node_cond = (struct node_condition*) malloc(sizeof(struct node_condition));
@@ -275,12 +275,12 @@ struct search_node* make_bool_attr_cond(int8_t node_order, char* attr_name, enum
 
 struct search_node* make_string_attr_cond(int8_t node_order, char* attr_name, enum string_operations operation, char* value) {
     struct string_condition* string_cond = (struct string_condition*) malloc(sizeof(struct string_condition));
-    string_cond->value = value;
+    copy_str_to_heap((const char**) &string_cond->value, value);
     string_cond->operation = operation;
 
     struct attr_condition* attr_cond = (struct attr_condition*) malloc(sizeof(struct attr_condition));
     attr_cond->type = STRING;
-    attr_cond->name = attr_name;
+    copy_str_to_heap((const char**) &attr_cond->name, attr_name);
     attr_cond->string_c = string_cond;
 
     struct node_condition* node_cond = (struct node_condition*) malloc(sizeof(struct node_condition));

@@ -188,11 +188,21 @@ struct not_condition {
 };
 
 /**
- * @param attr_name - должен быть из кучи, т.к. очищается при очистке итератора/условия. Относится ко всем make-ам
+ * @param attr_name - в структуру копируется, поэтому при необходимости пользователь исходник должен очистить сам
 */
 struct search_node* make_int_attr_cond(int8_t node_order, char* attr_name, enum digit_operations operation, int value);
+/**
+ * @param attr_name - в структуру копируется, поэтому при необходимости пользователь исходник должен очистить сам
+*/
 struct search_node* make_double_attr_cond(int8_t node_order, char* attr_name, enum digit_operations operation, double value);
+/**
+ * @param attr_name - в структуру копируется, поэтому при необходимости пользователь исходник должен очистить сам
+*/
 struct search_node* make_bool_attr_cond(int8_t node_order, char* attr_name, enum bool_operations operation, bool value);
+/**
+ * @param attr_name - в структуру копируется, поэтому при необходимости пользователь исходник должен очистить сам
+ * @param value - в структуру копируется, поэтому при необходимости пользователь исходник должен очистить сам
+*/
 struct search_node* make_string_attr_cond(int8_t node_order, char* attr_name, enum string_operations operation, char* value);
 /**
  * @param schema - очищается при очистке итератора

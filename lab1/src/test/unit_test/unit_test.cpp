@@ -366,7 +366,78 @@ void test_node_manupulate_api_module() {
 void test_node_search_api_module() {
     remove("test");
     struct file_descriptor* ptr = open_file_db("test");
+    // просто создать разветвленное дерево, где все ноды подходят под условие, и проверить что они обошлись в нужном порядке
+    std::vector<struct attribute_schema*>* schema_attr = new std::vector<struct attribute_schema*>;
+    schema_attr->push_back(create_attribute(INT, "order"));
+    struct schema* schema = create_schema(ptr, "main schema", schema_attr);
 
+    std::tr1::unordered_map<struct attribute_schema*, union data> attrs;
+
+    union data first_value = { .int_value = 1 };
+    union data second_value = { .int_value = 2 };
+    union data third_value = { .int_value = 3 };
+    union data fourth_value = { .int_value = 4 };
+    union data fifth_value = { .int_value = 5 };
+    union data six_value = { .int_value = 6 };
+    union data seven_value = { .int_value = 7 };
+
+    struct node* first_node;
+    struct node* second_node;
+    struct node* third_node;
+    struct node* fourth_node;
+    struct node* fifth_node;
+    struct node* six_node;
+    struct node* seven_node;
+
+    attrs[schema_attr->at(0)] = six_value;
+    assert(create_node(ptr, schema, 0, attrs, &first_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = seven_value;
+    assert(create_node(ptr, schema, first_node, attrs, &second_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = first_value;
+    assert(create_node(ptr, schema, 0, attrs, &third_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = fifth_value;
+    assert(create_node(ptr, schema, third_node, attrs, &fourth_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = third_value;
+    assert(create_node(ptr, schema, third_node, attrs, &fifth_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = fourth_value;
+    assert(create_node(ptr, schema, fifth_node, attrs, &six_node) == OK_NODE_CREATE);
+    attrs[schema_attr->at(0)] = second_value;
+    assert(create_node(ptr, schema, third_node, attrs, &seven_node) == OK_NODE_CREATE);
+
+    first_node = read_node(ptr, first_node->offset);
+    second_node = read_node(ptr, second_node->offset);
+    third_node = read_node(ptr, third_node->offset);
+    fourth_node = read_node(ptr, fourth_node->offset);
+    fifth_node = read_node(ptr, fifth_node->offset);
+    six_node = read_node(ptr, six_node->offset);
+    seven_node = read_node(ptr, seven_node->offset);
+
+    Search_Iter iter = find_nodes(ptr, make_int_attr_cond(0, "order", DIGIT_LESS, 10));
+    assert(iter.is_valid == true);
+    assert(compare_node(iter.operator*(), third_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), seven_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), fifth_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), six_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), fourth_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), first_node) == true);
+    assert(iter.next() == true);
+    assert(compare_node(iter.operator*(), second_node) == true);
+    assert(iter.next() == false);
+    iter.free();
+
+    free_node(first_node);
+    free_node(second_node);
+    free_node(third_node);
+    free_node(fourth_node);
+    free_node(fifth_node);
+    free_node(six_node);
+    free_node(seven_node);
+    free_schema(schema);
     close_file_db(ptr);
     printf("test search node module finished successful\n");
 }
