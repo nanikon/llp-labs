@@ -22,4 +22,6 @@ void close_file(int32_t fd);
 
 size_t get_file_len(const int32_t fd);
 
+void copy_str_to_heap(const char** dest, char* source);
+
 #endif

@@ -18,8 +18,6 @@ void write_schema(struct file_descriptor* ptr, struct schema* schema) {
         delete_block(schema->offset, ptr); 
     }
 
-    update_schema_next(ptr, ptr->header->last_schema, schema->offset);
-
     size_t offset = schema->offset;
     offset = write_buffer_to_file(ptr->fd, offset, &(attr_count), sizeof(size_t), 1);
     offset = write_buffer_to_file(ptr->fd, offset, &(schema->elem_size), sizeof(size_t), 1);
@@ -62,15 +60,11 @@ size_t read_schema_count(struct file_descriptor* ptr, size_t schema_offset) {
 
 struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
     size_t schema_offset = offset;
+    struct schema* schema = (struct schema*) malloc(sizeof(struct schema));
+    schema->offset = schema_offset;
     size_t attribute_count = 0;
     offset = read_buffer_from_file(ptr->fd, offset, &attribute_count, sizeof(size_t), 1);
-    size_t elem_size = 0;
-    offset = read_buffer_from_file(ptr->fd, offset, &elem_size, sizeof(size_t), 1);
-
-    struct schema* schema = (struct schema*) malloc(sizeof(struct schema)); // добавочек - на нуль-терминаторы для строк
-    schema->elem_size = elem_size;
-    schema->offset = schema_offset;
-
+    offset = read_buffer_from_file(ptr->fd, offset, &(schema->elem_size), sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->next), sizeof(size_t), 1);
     offset = read_buffer_from_file(ptr->fd, offset, &(schema->count), sizeof(size_t), 1);  
     offset = read_null_term_str_from_file(ptr->fd, offset, &(schema->name));

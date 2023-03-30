@@ -84,3 +84,8 @@ size_t get_file_len(const int32_t fd) {
 
     return file_stat.st_size;
 }
+
+void copy_str_to_heap(const char** dest, char* source) {
+    *dest = (const char*) malloc(sizeof(char) * (strlen(source) + 1)); // +1 на нуль терминатор
+    strcpy((char*) *dest, source);
+}

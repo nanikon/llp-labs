@@ -61,6 +61,7 @@ struct node* read_node(struct file_descriptor* ptr, size_t offset) {
             offset = read_null_term_str_from_file(ptr->fd, offset, &(attr->value.string_value));
             break;
         }
+        attributes->push_back(attr);
     }
     node->attributes = attributes;
 
@@ -162,6 +163,7 @@ bool compare_node(struct node* first_node, struct node* second_node) {
     if (first_node->prev_sibiling != second_node->prev_sibiling) return false;
     if (first_node->next_sibiling != second_node->next_sibiling) return false;
     if (!compare_schema(first_node->schema, second_node->schema)) return false;
+    if (first_node->attributes->size() != second_node->attributes->size()) return false;
     for (int i = 0; i < first_node->attributes->size(); i++) {
         switch (first_node->attributes->at(i)->schema->type)
         {
@@ -202,6 +204,7 @@ void free_node(struct node* node) {
         free(node->attributes->at(i));
     }
     free(node->attributes);
+    free_schema(node->schema);
     free(node);
 }
 

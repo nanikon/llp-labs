@@ -2,10 +2,10 @@
 #define LLP_UNIT_TEST_H
 
 #include "../../file/file.h"
-#include "../../structs/block.h"
+#include "../../api/api.h"
 #include <assert.h>
 
-#define UNIT_TEST_COUNT 3
+#define UNIT_TEST_COUNT 8
 
 typedef void (*unit_test_func)();
 

@@ -65,6 +65,7 @@ void update_next_sibiling(struct file_descriptor* ptr, size_t node_offset, size_
 
 bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node);
 bool check_not_root(struct file_descriptor* ptr, size_t node_offset);
+bool compare_node(struct node* first_node, struct node* second_node);
 void replace_node(struct file_descriptor* ptr, size_t new_offset, struct node** node);
 
 void free_node(struct node* node);

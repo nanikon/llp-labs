@@ -24,9 +24,9 @@ enum schema_delete_operation_status {
     NOT_FOUND_ON_FILE
 };
 
-/** @param name - должно быть выделено в куче */
+/** @param name - для объекта копируется в кучу, основной экземпляр должен управляются пользователем */
 struct attribute_schema* create_attribute(enum value_type type, char* name);
-/** @param attributes - должен быть выделен в куче */
+/** @param attributes - для объекта копируется в кучу, основной экземпляр должен управляются пользователем  */
 struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vector<struct attribute_schema*>* attributes);
 enum schema_delete_operation_status delete_schema(struct file_descriptor* ptr, struct schema* schema);
 

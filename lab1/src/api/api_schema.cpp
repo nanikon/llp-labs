@@ -22,19 +22,21 @@ Schema_Iter read_schemas(struct file_descriptor* ptr) {
 }
 
 struct attribute_schema* create_attribute(enum value_type type, char* name) {
-    struct attribute_schema* attr = (struct attribute_schema*) malloc(sizeof(struct attribute_schema));
+    struct attribute_schema* attr = (struct attribute_schema*) calloc(1, sizeof(struct attribute_schema));
     attr->type = type;
-    attr->name = name;
+    copy_str_to_heap(&attr->name, name);
     return attr;
 }
 
 struct schema* create_schema(struct file_descriptor* ptr, char* name, std::vector<struct attribute_schema*>* attributes) {
     struct schema* schema = (struct schema*) calloc(1, sizeof(struct schema));
     schema->attributes = attributes;
-    schema->name = name;
+    copy_str_to_heap(&schema->name, name);
     schema->count = 0;
     schema->next = 0;
     write_schema(ptr, schema);
+    update_schema_next(ptr, ptr->header->last_schema, schema->offset);
+    ptr->header->last_schema = schema->offset;
     return schema;
 }
 
