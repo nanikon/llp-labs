@@ -244,8 +244,69 @@ void test_delete_node(size_t count) {
     printf("test delete node finished successful\n");
 }
 
+void test_file_size(size_t count) {
+    remove("test");
+    struct file_descriptor* ptr = open_file_db("test");
+    std::vector<struct attribute_schema*>* schema_attr = new std::vector<struct attribute_schema*>;
+    char* attr_name = "just value";
+    schema_attr->push_back(create_attribute(STRING, attr_name));
+    struct schema* schema = create_schema(ptr, "main schema", schema_attr);
+
+    size_t nodes_counter = 1;    
+    size_t* nodes = new size_t[count + 1];
+    nodes[0] = 0;
+
+    std::tr1::unordered_map<struct attribute_schema*, union data> attrs;
+    struct node* parent = NULL;
+    struct node* node;
+    int parent_index = 0;
+    size_t parent_offset;
+
+    std::vector<int> file_size_count(count);
+
+    for (int i = 0; i < count; i++) {
+        union data value = { .string_value = get_random_string(get_random_int(1, 10)) };
+        attrs.clear();
+        attrs[schema_attr->at(0)] = value;
+
+        create_node(ptr, schema, parent, attrs, &node);
+
+        nodes[nodes_counter] = node->offset;
+        nodes_counter++;
+        free_node(node);
+
+        int parent_index = get_random_int(0, nodes_counter - 1);
+        size_t parent_offset = nodes[parent_index];
+        if (parent != NULL) { 
+            struct schema* sc = parent->schema;
+            free_node(parent); 
+            free_schema(sc);
+        }
+        parent = read_node(ptr, parent_offset);
+        file_size_count[i] = get_file_len(ptr->fd);
+    }
+
+    remove("file_size");
+    FILE* fp = fopen("file_size", "wt");
+    for (int i = 0; i < count; i++) {
+        fprintf(fp, "%d,%d\n", i, file_size_count[i]);
+    }
+    fclose(fp);
+
+    delete [] nodes;
+    if (parent != NULL) { 
+        struct schema* sc = parent->schema;
+            free_node(parent); 
+            free_schema(sc);
+    }
+    free_schema(schema);
+    close_file_db(ptr);
+    printf("test file size finished successful\n");
+}
+
 stress_test_func stress_tests[STRESS_TEST_COUNT] = {
     test_insert_and_search_node,
     test_update_node,
-    test_delete_node
+    test_delete_node,
+    test_file_size
 };

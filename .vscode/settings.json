@@ -32,7 +32,8 @@
         "array": "cpp",
         "unordered_map": "cpp",
         "tuple": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "cstring": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/lab1"
 }
