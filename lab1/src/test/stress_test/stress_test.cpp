@@ -236,7 +236,7 @@ void test_delete_node(size_t count) {
     }
 
     remove("delete_time");
-    FILE* fp = fopen("update_time", "wt");
+    FILE* fp = fopen("delete_time", "wt");
     for (int i = 1; i <= delete_time.size(); i++) {
         fprintf(fp, "%d,%.6f\n", i * 10, delete_time[i - 1]);
     }
@@ -245,5 +245,7 @@ void test_delete_node(size_t count) {
 }
 
 stress_test_func stress_tests[STRESS_TEST_COUNT] = {
+    test_insert_and_search_node,
+    test_update_node,
     test_delete_node
 };

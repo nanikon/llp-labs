@@ -3,7 +3,7 @@
 
 #include "../../api/api.h"
 
-#define STRESS_TEST_COUNT 1
+#define STRESS_TEST_COUNT 3
 
 typedef void (*stress_test_func)(size_t);
 

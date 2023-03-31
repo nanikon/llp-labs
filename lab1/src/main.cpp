@@ -30,11 +30,4 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Invalid argument %s, expect: %s\n", argv[1], argument_description);
         return -1;
     }
-    /*printf("<============ Stress tests started ============>\n");
-    size_t count = 100;
-    for (int i = 0; i < STRESS_TEST_COUNT; i++) {
-        stress_tests[i](count);
-    }
-    printf("<============ Stress tests finihshed ============>\n");
-    return 0;*/
 }
