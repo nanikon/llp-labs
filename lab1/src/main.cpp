@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         printf("<============ Unit tests finihshed ============>\n");
     } else if (strcmp(argv[1], "s") == 0) {
         printf("<============ Stress tests started ============>\n");
-        size_t count = 1000;
+        size_t count = 20000;
         for (int i = 0; i < STRESS_TEST_COUNT; i++) {
             stress_tests[i](count);
         }
@@ -30,5 +30,11 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Invalid argument %s, expect: %s\n", argv[1], argument_description);
         return -1;
     }
-    return 0;
+    /*printf("<============ Stress tests started ============>\n");
+    size_t count = 100;
+    for (int i = 0; i < STRESS_TEST_COUNT; i++) {
+        stress_tests[i](count);
+    }
+    printf("<============ Stress tests finihshed ============>\n");
+    return 0;*/
 }

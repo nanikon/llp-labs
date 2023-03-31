@@ -205,7 +205,9 @@ bool Search_Iter::next() {
 
 void Search_Iter::free() {
     if (node != NULL) {
+        struct schema* schema = node->schema;
         free_node(node);
+        free_schema(schema);
     }
     free_search_node(cond);
 }
@@ -375,6 +377,7 @@ void free_search_node(struct search_node* cond) {
                             free(cond->node_c->attr_c->string_c);
                             break;
                     };
+                    free(cond->node_c->attr_c->name);
                     free(cond->node_c->attr_c);
                     break;
                 case SCHEMA:

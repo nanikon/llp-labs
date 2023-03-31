@@ -204,7 +204,9 @@ bool check_exist_and_update_node(struct file_descriptor* ptr, struct node** node
         (*node)->prev_sibiling = real_node->prev_sibiling;
         (*node)->next_sibiling = real_node->next_sibiling;
     }
+    struct schema* schema = real_node->schema;
     free_node(real_node);
+    free_schema(schema);
     return result;
 }
 
@@ -215,12 +217,15 @@ void free_node(struct node* node) {
         }
         free(node->attributes->at(i));
     }
-    free(node->attributes);
+    node->attributes->clear();
+    delete node->attributes;
     free(node);
 }
 
 void replace_node(struct file_descriptor* ptr, size_t new_offset, struct node** node) {
-    free(*node);
+    struct schema* schema = (*node)->schema;
+    free_node(*node);
+    free_schema(schema);
     *node = read_node(ptr, new_offset);
 }
 

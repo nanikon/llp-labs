@@ -29,6 +29,7 @@ struct file_descriptor* open_file_db(const char* filename) {
 
         write_header(ptr);
         free_node(node);
+        free_schema(schema);
     } else {
         // файл уже существовал, надо только вычитать хедер
         ptr->header = read_header(fd);

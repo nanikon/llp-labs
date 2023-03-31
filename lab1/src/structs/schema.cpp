@@ -95,8 +95,10 @@ struct schema* read_schema(struct file_descriptor* ptr, size_t offset) {
 void free_schema(struct schema* schema) {
     for (int i = 0; i < schema->attributes->size(); i++) {
         delete[] schema->attributes->at(i)->name;
+        free(schema->attributes->at(i));
     }
-    free(schema->attributes);
+    schema->attributes->clear();
+    delete schema->attributes;
     delete[] schema->name;
     free(schema);
 }
