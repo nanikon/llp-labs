@@ -13,4 +13,5 @@ add_executable(main src/main.cpp
         src/structs/node.h src/structs/node.cpp
         src/api/api.h src/api/api_file.cpp src/api/api_node.cpp src/api/api_schema.cpp src/api/api_search.cpp
         src/test/unit_test/unit_test.h src/test/unit_test/unit_test.cpp
+        src/test/stress_test/stress_test.h src/test/stress_test/stress_test.cpp
 )
